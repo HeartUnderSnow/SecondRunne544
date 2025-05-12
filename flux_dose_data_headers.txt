@@ -1,0 +1,1 @@
+Energy_Lower(MeV),Energy_Upper(MeV),Energy_Mean(MeV),Flux(n/cm²/s),Flux_Error(n/cm²/s),Flux_per_Energy(n/cm²/s/MeV),Flux_per_Energy_Error(n/cm²/s/MeV),Dose_Rate(rem/hr)

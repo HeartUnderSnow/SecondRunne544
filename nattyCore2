@@ -1,0 +1,177 @@
+--- Natura mock-up MSR reactor input file
+
+/*************************
+ * Geometry Definitions *
+ ************************/ 
+
+% --- Simple world boundary
+surf worldsurf sph 0.0 0.0 0.0 20000.0
+
+% --- Inner surface of the core
+surf s1 cylz 0.0 0.0 101.0 -123.5 63.5 
+
+% --- Outer cylinder surface of the core
+surf s2 cylz 0.0 0.0 121.0 -190.5 190.5 
+
+% --- Middle Top Cylinder
+surf s3 cylz 0.0 0.0 10.0 63.5 126.85 
+
+% --- Left Top Cylinder
+surf s4 cylz -85.5 0.0 35.5 63.5 126.85
+
+% -- Right Top Cylinder
+surf s5 cylz 85.5 0.0 35.5 63.5 126.85
+
+% -- Drain Tank
+surf s6 cylz 0.0 0.0 101.0 -190.5 -123.5 
+
+% --- Room outer boundaries
+surf room1_outer cuboid -350  350 -300 300 -300 300
+surf room2_outer cuboid  450  900 -300 300 -300 300
+surf room3_outer cuboid 1000 1450 -300 300 -300 300
+
+% --- Room inner spaces (30cm thick walls)
+surf room1_inner cuboid -320  320 -270 270 -270 270
+surf room2_inner cuboid  480  870 -270 270 -270 270
+surf room3_inner cuboid 1030 1420 -270 270 -270 270
+
+% --- Connecting pipe surfaces (simplified)
+% Pipe from outside reactor to heat exchanger
+surf pipe_inner cylx 0.0 0.0 655.0 0.0 10.0  % 10 cm inner radius
+surf pipe_outer cylx 0.0 0.0 655.0 0.0 12.0  % 12 cm outer radius (2cm thick wall)
+surf pipe_start px 320.0   % Start in room 2 to avoid complex intersections
+surf pipe_end   px 655.0   % End at heat exchanger inner surface
+
+% --- Graphite moderator pin
+surf p1 cylz 0.0 0.0 5.0  -123.5 63.5
+cell cpin1 1 moder -p1
+cell cpin2 1 fuel p1 
+
+% --- Hexagonal lattice of graphite pins
+lat 10 2 0.0 0.0 21 21 15.0
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+
+% --- Cell Definitions --- 
+
+% Pipe cells (defined first for priority)
+cell Cpipe_fuel 0 fuel -pipe_inner -pipe_end pipe_start
+cell Cpipe_wall 0 hasteN -pipe_outer pipe_inner -pipe_end pipe_start
+
+% Inside the core (fuel with graphite moderator lattice)
+cell CIn 0 fill 10 -s1
+
+% Drain Tank 
+cell Cdrain 0 hasteN -s6
+
+% Middle Top Cylinder
+cell CmidTop 0 hasteN -s3
+
+% Left Top Cylinder
+cell CleftTop 0 hasteN -s4
+
+% Right Top Cylinder 
+cell CrightTop 0 hasteN -s5
+
+% Region between inner and outer surfaces of reactor
+cell Ctwn 0 hasteN -s2 s1 s3 s4 s5 s6
+
+% Room 1 - Concrete walls 
+cell room1_walls 0 concrete -room1_outer room1_inner
+
+% Room 1 - Interior void (with reactor)
+cell room1_interior 0 void -room1_inner s2
+
+% Room 2 - Concrete walls (excluding pipe region)
+cell room2_walls 0 concrete -room2_outer room2_inner pipe_outer
+
+% Room 2 - Interior (with heat exchanger and pipe)
+cell room2_interior 0 m17 -room2_inner heatexchange_outer pipe_outer
+
+% --- Room 3 - Concrete walls
+cell room3_walls 0 concrete -room3_outer room3_inner
+
+% Room 3 - Interior air
+cell room3_interior 0 m17 -room3_inner
+
+% Void space (to fill the rest of the universe)
+cell void_space 0 void -worldsurf room1_outer room2_outer room3_outer
+
+% Outside world
+cell Cout 0 outside worldsurf
+
+set bc 1
+
+% --- Link the material files to this output 
+include "natMaterials" 
+
+/*******************
+ * Room 2 Surfaces
+ * and cells       *
+ ******************/ 
+
+% -- Cylinder surface
+surf heatexchange_inner cylz 675.0 0.0 20.0 -150 150 % inner cyl region 
+surf heatexchange_outer cylz 675.0 0.0 30.0 -150 150 % outer cyl region 
+
+% --- Cells 
+cell room2_salt 0 fuel -heatexchange_inner
+cell room2_cont 0 hasteN -heatexchange_outer heatexchange_inner
+
+/********************
+ * Detector Setup   *
+ *******************/
+
+% --- Energy grids
+ene c0grid 3 100 0.1 10        % Standard energy grid
+
+% --- Simple detectors (one per room)
+det Room1Det dc room1_interior dm void dv 1.0
+det Room2Det dc room2_interior dm m17 dv 1.0
+det Room3Det dc room3_interior dm m17 dv 1.0 
+
+% --- Core flux spectrum
+det FluxDet dc CIn dm fuel de c0grid du 1        % Core flux spectrum
+
+% --- Source definition (external source mode)
+set nps 1000000                  % Number of source neutrons
+src core sp 0.0 0.0  0.0         % Point source at origin, inside core
+se 2                             
+set power 1000000 
+
+% Top-down reactor view (yz-plane)
+plot 3 1500 1500 0.0 0.0 -30 -20 40 -20 40   
+
+% -- Alt top-down reactor view
+plot 3 2500 2500 0.0 0.0 -200 -100 100 -300 300
+
+% --- Second alt
+plot 3 2500 2500 0.0 0.0 -200 -100 100 -100 100
+
+% --- Room 2 cross section showing pipe connection
+plot 1 2500 2500 675.0 0.0 -200 -50 50 -200 200
+
+% --- Room 3 cross section 
+plot 1 2500 2500 1225.0 0.0 -200 -300 300 -300 300
+
+% --- Horizontal cross-section showing pipe path (xy-plane at z=0)
+plot 1 3000 1000 0.0 0.0 0.0 -200 700 -200 200
